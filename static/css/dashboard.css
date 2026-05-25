@@ -1,0 +1,284 @@
+/* ============================================================
+   dashboard.css — v2: dark theme, CSS Grid, sem dependências
+   ============================================================ */
+
+/* --- Tokens de design ------------------------------------ */
+:root {
+  --bg-base:      #080d18;
+  --bg-card:      #0f1623;
+  --bg-card-alt:  #131c2e;
+  --border:       #1e2d45;
+  --text-primary: #e8edf5;
+  --text-muted:   #5b6f8a;
+  --blue:         #3b82f6;
+  --green:        #10b981;
+  --amber:        #f59e0b;
+  --red:          #ef4444;
+  --purple:       #8b5cf6;
+  --teal:         #06b6d4;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --shadow:       0 4px 24px rgba(0,0,0,0.4);
+  --transition:   0.25s ease;
+}
+
+/* --- Reset mínimo ---------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout principal ------------------------------------ */
+.app-wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+main {
+  padding: 1.25rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* --- Header ---------------------------------------------- */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.header-brand { display: flex; align-items: center; gap: 0.75rem; }
+.header-brand svg  { color: var(--blue); flex-shrink: 0; }
+.header-brand h1   { font-size: 1.05rem; font-weight: 600; letter-spacing: 0.01em; }
+.header-brand span { font-size: 0.75rem; color: var(--text-muted); display: block; font-weight: 400; }
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+}
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; transition: background var(--transition); }
+.status-dot.connected    { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot.disconnected { background: var(--red);   box-shadow: 0 0 6px var(--red); animation: blink 1s infinite; }
+
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+/* --- Banner offline -------------------------------------- */
+#offline-banner {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #fca5a5;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-sm);
+  margin-bottom: -0.25rem;
+}
+
+/* --- Barra de alertas ------------------------------------ */
+#alert-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: var(--radius-sm);
+}
+
+.alert-chip {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--amber);
+  background: rgba(245,158,11,0.15);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* --- Grade de KPIs --------------------------------------- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+/* --- Card genérico --------------------------------------- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.card:hover { border-color: #2c3f5c; }
+
+/* Alerta crítico no card */
+.card-alert {
+  border-color: rgba(239,68,68,0.5) !important;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.15), var(--shadow) !important;
+  animation: card-pulse 1.8s ease-in-out infinite;
+}
+@keyframes card-pulse {
+  0%,100% { box-shadow: 0 0 0 2px rgba(239,68,68,0.15), var(--shadow); }
+  50%      { box-shadow: 0 0 0 5px rgba(239,68,68,0.28), var(--shadow); }
+}
+
+.card-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+
+/* --- KPI card -------------------------------------------- */
+.kpi-value { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.kpi-sub   { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+.kpi-bar-track {
+  margin-top: 0.85rem;
+  height: 4px;
+  background: var(--bg-card-alt);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.kpi-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background var(--transition);
+  width: 0%;
+}
+
+/* --- Grade principal de gráficos ------------------------- */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.chart-cpu-wrap { grid-column: 1; }
+.chart-cores    { grid-column: 2; }
+.chart-net      { grid-column: 1; }
+.chart-mem      { grid-column: 2; }
+.chart-diskio   { grid-column: 1; }
+.chart-procs    { grid-column: 2; }
+
+@media (max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-cpu-wrap, .chart-cores, .chart-net,
+  .chart-mem, .chart-diskio, .chart-procs { grid-column: 1; }
+}
+
+/* --- Containers de gráfico ------------------------------- */
+.chart-container {
+  position: relative;
+  height: 190px;
+  margin-top: 0.75rem;
+}
+
+/* --- Donut de memória ------------------------------------ */
+.chart-mem-wrapper {
+  position: relative;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+.mem-center { position: absolute; text-align: center; pointer-events: none; }
+#mem-center-label { font-size: 1.6rem; font-weight: 700; display: block; }
+.mem-center small { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* --- CPU por núcleo -------------------------------------- */
+#core-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+#core-grid::-webkit-scrollbar { width: 3px; }
+#core-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+.core-item {
+  display: grid;
+  grid-template-columns: 24px 1fr 34px;
+  align-items: center;
+  gap: 0.5rem;
+}
+.core-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; }
+.core-track { height: 6px; background: var(--bg-card-alt); border-radius: 99px; overflow: hidden; }
+.core-fill  { height: 100%; border-radius: 99px; transition: width 0.5s ease, background var(--transition); }
+.core-pct   { font-size: 0.68rem; color: var(--text-muted); text-align: right; }
+
+/* --- Tabela de processos --------------------------------- */
+.proc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin-top: 0.75rem;
+}
+.proc-table thead th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0 0 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.proc-table tbody tr { border-bottom: 1px solid rgba(30,45,69,0.5); }
+.proc-table tbody tr:last-child { border-bottom: none; }
+.proc-table tbody td { padding: 0.4rem 0; vertical-align: middle; }
+
+.proc-name { color: var(--text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.proc-cpu-cell { display: flex; align-items: center; gap: 0.4rem; }
+.proc-bar-wrap { flex: 1; height: 5px; background: var(--bg-card-alt); border-radius: 99px; overflow: hidden; }
+.proc-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease, background var(--transition); }
+.proc-val      { font-size: 0.72rem; color: var(--text-muted); min-width: 36px; text-align: right; }
+.proc-mem      { color: var(--text-muted); padding-left: 0.5rem; }
+
+/* --- Footer --------------------------------------------- */
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}

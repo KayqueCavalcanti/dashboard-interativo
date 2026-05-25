@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor de Sistema</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="header-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+      </svg>
+      <div>
+        <h1>Monitor de Sistema</h1>
+        <span>Telemetria em tempo real · WebSocket</span>
+      </div>
+    </div>
+    <div class="status-badge" role="status" aria-live="polite">
+      <span class="status-dot disconnected" id="status-dot"></span>
+      <span id="status-label">Conectando…</span>
+    </div>
+  </header>
+
+  <!-- ===== Conteúdo principal ===== -->
+  <main>
+
+    <!-- Banner: servidor inacessível por mais de 10 s -->
+    <div id="offline-banner" role="alert" hidden>
+      Servidor inacessível. Verifique se o Flask está rodando e aguarde a reconexão automática.
+    </div>
+
+    <!-- Barra de alertas de limiar (CPU ≥ 85 %, RAM ≥ 85 %, Disco ≥ 90 %) -->
+    <div id="alert-bar" role="alert" aria-live="polite" hidden></div>
+
+    <!-- ── KPIs ── -->
+    <section class="kpi-grid" aria-label="Indicadores de desempenho">
+
+      <article class="card" id="card-cpu" aria-labelledby="kpi-cpu-title">
+        <p class="card-title" id="kpi-cpu-title">CPU</p>
+        <p class="kpi-value" id="kpi-cpu-value" aria-live="polite">—</p>
+        <p class="kpi-sub">Uso do processador</p>
+        <div class="kpi-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="kpi-bar-fill" id="kpi-cpu-bar"></div>
+        </div>
+      </article>
+
+      <article class="card" id="card-mem" aria-labelledby="kpi-mem-title">
+        <p class="card-title" id="kpi-mem-title">Memória</p>
+        <p class="kpi-value" id="kpi-mem-value" aria-live="polite">—</p>
+        <p class="kpi-sub" id="kpi-mem-sub">RAM utilizada</p>
+        <div class="kpi-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="kpi-bar-fill" id="kpi-mem-bar"></div>
+        </div>
+      </article>
+
+      <article class="card" id="card-disk" aria-labelledby="kpi-disk-title">
+        <p class="card-title" id="kpi-disk-title">Disco</p>
+        <p class="kpi-value" id="kpi-disk-value" aria-live="polite">—</p>
+        <p class="kpi-sub" id="kpi-disk-sub">Espaço ocupado</p>
+        <div class="kpi-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="kpi-bar-fill" id="kpi-disk-bar"></div>
+        </div>
+      </article>
+
+      <article class="card" aria-labelledby="kpi-uptime-title">
+        <p class="card-title" id="kpi-uptime-title">Uptime</p>
+        <p class="kpi-value" id="kpi-uptime-value" aria-live="polite" style="font-size:1.4rem">—</p>
+        <p class="kpi-sub">Desde a última inicialização</p>
+        <div class="kpi-bar-track" style="opacity:0"><div class="kpi-bar-fill"></div></div>
+      </article>
+
+    </section>
+
+    <!-- ── Gráficos ── -->
+    <section class="charts-grid" aria-label="Gráficos de telemetria">
+
+      <!-- CPU histórico (linha temporal) -->
+      <article class="card chart-cpu-wrap" aria-labelledby="chart-cpu-title">
+        <p class="card-title" id="chart-cpu-title">Histórico de CPU (%)</p>
+        <div class="chart-container">
+          <canvas id="cpu-chart" aria-label="Histórico de uso de CPU"></canvas>
+        </div>
+      </article>
+
+      <!-- CPU por núcleo -->
+      <article class="card chart-cores" aria-labelledby="chart-cores-title">
+        <p class="card-title" id="chart-cores-title">CPU por Núcleo</p>
+        <div id="core-grid" aria-label="Uso por núcleo de CPU"></div>
+      </article>
+
+      <!-- Rede -->
+      <article class="card chart-net" aria-labelledby="chart-net-title">
+        <p class="card-title" id="chart-net-title">Rede (KB/s)</p>
+        <div class="chart-container">
+          <canvas id="net-chart" aria-label="Tráfego de rede"></canvas>
+        </div>
+      </article>
+
+      <!-- Memória RAM (donut) -->
+      <article class="card chart-mem" aria-labelledby="chart-mem-title">
+        <p class="card-title" id="chart-mem-title">Memória RAM</p>
+        <div class="chart-mem-wrapper">
+          <canvas id="mem-chart" aria-label="Uso de memória RAM"></canvas>
+          <div class="mem-center">
+            <span id="mem-center-label">—</span>
+            <small>em uso</small>
+          </div>
+        </div>
+      </article>
+
+      <!-- I/O de disco -->
+      <article class="card chart-diskio" aria-labelledby="chart-diskio-title">
+        <p class="card-title" id="chart-diskio-title">I/O de Disco (KB/s)</p>
+        <div class="chart-container">
+          <canvas id="disk-io-chart" aria-label="Leitura e escrita em disco"></canvas>
+        </div>
+      </article>
+
+      <!-- Top processos -->
+      <article class="card chart-procs" aria-labelledby="chart-procs-title">
+        <p class="card-title" id="chart-procs-title">Top Processos (CPU)</p>
+        <table class="proc-table" aria-label="Processos com maior uso de CPU">
+          <thead>
+            <tr>
+              <th>Processo</th>
+              <th>CPU</th>
+              <th>MEM</th>
+            </tr>
+          </thead>
+          <tbody id="proc-tbody">
+            <tr><td colspan="3" style="color:var(--text-muted);padding-top:.5rem">Aguardando dados…</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+    </section>
+  </main>
+
+  <footer>
+    <small>Dados coletados via <code>psutil</code> · Transmissão por WebSocket (Socket.IO) · Histórico em SQLite</small>
+  </footer>
+
+</div>
+
+<!-- Libs externas -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+
+<!-- Lógica da aplicação -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

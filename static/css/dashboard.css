@@ -24,6 +24,8 @@
 
 /* --- Reset mínimo ---------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Garante que o atributo `hidden` sempre vença qualquer regra de display */
+[hidden] { display: none !important; }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
